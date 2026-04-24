@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multimedia Pembelajaran Hand Tap</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Plus Jakarta Sans', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace']
+      }
+    }
+  }
+}
+</script>
+  <style>
+html, body { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+
+.app-shell { height: 100%; overflow: auto; }
+
+.nav-btn { transition: all 0.3s ease; position: relative; }
+.nav-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  border-radius: 2px;
+}
+.nav-btn:hover { transform: translateY(-1px); }
+
+.card-enter { animation: cardIn 0.4s ease forwards; opacity: 0; }
+@keyframes cardIn { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+
+.accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.accordion-body.open { max-height: 2000px; }
+
+.tap-visual { transition: all 0.5s ease; }
+
+.sim-tap { cursor: pointer; transition: transform 0.3s, filter 0.3s; }
+.sim-tap:hover { filter: brightness(1.1); }
+.sim-tap.selected { transform: scale(1.05); }
+
+.quiz-option { transition: all 0.25s ease; cursor: pointer; }
+.quiz-option:hover { transform: translateX(4px); }
+.quiz-option.correct { border-color: #22c55e !important; background: #f0fdf4 !important; }
+.quiz-option.wrong { border-color: #ef4444 !important; background: #fef2f2 !important; }
+
+.progress-fill { transition: width 0.6s ease; }
+
+.step-card { transition: all 0.3s ease; }
+.step-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  opacity: 0; transition: all 0.4s ease; z-index: 100; pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+.hero-gradient {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #334155 100%);
+}
+.accent-gradient {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="font-sans h-full">
+  <div class="app-shell bg-slate-50" id="app">
+   <!-- Header -->
+   <header class="hero-gradient text-white sticky top-0 z-50 shadow-lg">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+     <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg accent-gradient flex items-center justify-center">
+       <i data-lucide="wrench" class="w-5 h-5 text-slate-900"></i>
+      </div>
+      <div>
+       <h1 id="mainTitle" class="text-lg font-bold leading-tight">Hand Tap</h1>
+       <p id="subtitle" class="text-xs text-amber-300 font-medium">Multimedia Pembelajaran Interaktif</p>
+      </div>
+     </div>
+    </div><!-- Navigation -->
+    <nav class="max-w-5xl mx-auto px-4 flex gap-1 pb-0 overflow-x-auto">
+     <button onclick="showSection('materi')" id="nav-materi" class="nav-btn active px-5 py-2.5 text-sm font-semibold rounded-t-lg flex items-center gap-2 text-amber-300 bg-white/10 shrink-0"> <i data-lucide="book-open" class="w-4 h-4"></i> Materi </button> <button onclick="showSection('simulasi')" id="nav-simulasi" class="nav-btn px-5 py-2.5 text-sm font-semibold rounded-t-lg flex items-center gap-2 text-slate-300 hover:text-amber-300 shrink-0"> <i data-lucide="play-circle" class="w-4 h-4"></i> Simulasi </button> <button onclick="showSection('tujuan')" id="nav-tujuan" class="nav-btn px-5 py-2.5 text-sm font-semibold rounded-t-lg flex items-center gap-2 text-slate-300 hover:text-amber-300 shrink-0"> <i data-lucide="target" class="w-4 h-4"></i> Tujuan </button> <button onclick="showSection('evaluasi')" id="nav-evaluasi" class="nav-btn px-5 py-2.5 text-sm font-semibold rounded-t-lg flex items-center gap-2 text-slate-300 hover:text-amber-300 shrink-0"> <i data-lucide="clipboard-check" class="w-4 h-4"></i> Evaluasi </button> <button onclick="showSection('kuis')" id="nav-kuis" class="nav-btn px-5 py-2.5 text-sm font-semibold rounded-t-lg flex items-center gap-2 text-slate-300 hover:text-amber-300 shrink-0"> <i data-lucide="help-circle" class="w-4 h-4"></i> Kuis </button>
+    </nav>
+   </header><!-- MATERI SECTION -->
+   <section id="sec-materi" class="max-w-5xl mx-auto px-4 py-6 space-y-5">
+    <!-- Intro Card -->
+    <div class="card-enter bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+     <div class="accent-gradient p-5">
+      <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2"><i data-lucide="info" class="w-5 h-5"></i> Apa itu Hand Tap?</h2>
+     </div>
+     <div class="p-5 space-y-3 text-slate-700 leading-relaxed text-sm">
+      <p><strong>Hand tap</strong> adalah tap yang dioperasikan secara manual — sebuah alat untuk membuat alur ulir pada <em>sekrup female</em>. Bayangkan sebagai alat untuk membuat lubang ulir.</p>
+      <p>Proses pembuatan lubang ulir umumnya disebut sebagai <strong>"threading"</strong> atau <strong>"tapping"</strong>.</p>
+      <p>Meskipun "tapping" mengingatkan pada pembuatan ulir pada <em>sekrup male</em>, istilah ini juga digunakan untuk membuat ulir pada <em>sekrup female</em>. Pembuatan ulir membutuhkan <strong>keterampilan dan ketelitian tinggi</strong> — seperti kekuatan tekanan dan sudut memasukkan tap. Jika tidak hati-hati, tap dapat mudah patah dan sulit untuk diambil.</p>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-3">
+       <p class="text-amber-800 text-xs font-medium flex items-start gap-2"><i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 shrink-0"></i> <span>Selain hand tap, terdapat metode lain menggunakan mesin bubut dengan <strong>threading tool</strong> — alat berujung segitiga bersudut 60° untuk membuat ulir dengan jarak sama dalam beberapa tahap pemotongan.</span></p>
+      </div>
+     </div>
+    </div><!-- Jenis Tap Accordion -->
+    <div class="card-enter bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" style="animation-delay:0.1s">
+     <div class="p-5 border-b border-slate-100">
+      <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i data-lucide="layers" class="w-5 h-5 text-amber-500"></i> Jenis-Jenis Hand Tap</h2>
+      <p class="text-xs text-slate-500 mt-1">Tap diklasifikasikan menjadi 3 jenis: Awal, Tengah, dan Atas (Tap No. 1, 2, dan 3)</p>
+     </div><!-- Tap 1 -->
+     <div class="border-b border-slate-100">
+      <button onclick="toggleAccordion('tap1')" class="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition">
+       <div class="flex items-center gap-3">
+        <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-sm flex items-center justify-center">1</span>
+        <div class="text-left">
+         <span class="font-semibold text-slate-800 text-sm">Tap Awal (Taper Tap)</span> <span class="block text-xs text-slate-500">9 utas chamfer</span>
+        </div>
+       </div><i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition" id="icon-tap1"></i> </button>
+      <div class="accordion-body px-4" id="body-tap1">
+       <div class="pb-4 pl-11 space-y-2 text-sm text-slate-600">
+        <div class="flex gap-4 mb-3">
+         <svg width="180" height="50" viewbox="0 0 180 50" class="shrink-0">
+          <defs>
+           <lineargradient id="g1" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#93c5fd" />
+            <stop offset="100%" stop-color="#3b82f6" />
+           </lineargradient>
+          </defs> <rect x="60" y="15" width="120" height="20" rx="3" fill="url(#g1)" stroke="#2563eb" stroke-width="1" /> <polygon points="10,25 60,10 60,40" fill="#93c5fd" stroke="#2563eb" stroke-width="1" /> <line x1="70" y1="10" x2="70" y2="40" stroke="#1e40af" stroke-width="0.5" stroke-dasharray="2" /> <line x1="85" y1="10" x2="85" y2="40" stroke="#1e40af" stroke-width="0.5" stroke-dasharray="2" /> <line x1="100" y1="10" x2="100" y2="40" stroke="#1e40af" stroke-width="0.5" stroke-dasharray="2" /> <text x="50" y="48" font-size="7" fill="#1e40af" font-family="sans-serif">
+           ← 9 utas →
+          </text>
+         </svg>
+        </div>
+        <p><strong>Hitungan:</strong> 1 (Tap No.1)</p>
+        <p><strong>Panjang chamfer:</strong> 9 utas</p>
+        <p>Digunakan pada langkah pertama. Ujung tap yang miring dan meruncing (lancip) memudahkan pengarahan ke lubang bor. Semakin sedikit gigi pada tap memungkinkan pemotongan dengan tenaga lebih sedikit.</p>
+       </div>
+      </div>
+     </div><!-- Tap 2 -->
+     <div class="border-b border-slate-100">
+      <button onclick="toggleAccordion('tap2')" class="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition">
+       <div class="flex items-center gap-3">
+        <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm flex items-center justify-center">2</span>
+        <div class="text-left">
+         <span class="font-semibold text-slate-800 text-sm">Tap Tengah (Plug Tap)</span> <span class="block text-xs text-slate-500">5 utas chamfer</span>
+        </div>
+       </div><i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition" id="icon-tap2"></i> </button>
+      <div class="accordion-body px-4" id="body-tap2">
+       <div class="pb-4 pl-11 space-y-2 text-sm text-slate-600">
+        <svg width="180" height="50" viewbox="0 0 180 50" class="shrink-0 mb-2">
+         <defs>
+          <lineargradient id="g2" x1="0" y1="0" x2="1" y2="0">
+           <stop offset="0%" stop-color="#86efac" />
+           <stop offset="100%" stop-color="#22c55e" />
+          </lineargradient>
+         </defs> <rect x="40" y="15" width="140" height="20" rx="3" fill="url(#g2)" stroke="#16a34a" stroke-width="1" /> <polygon points="20,25 40,15 40,35" fill="#86efac" stroke="#16a34a" stroke-width="1" /> <text x="35" y="48" font-size="7" fill="#166534" font-family="sans-serif">
+          ← 5 utas →
+         </text>
+        </svg>
+        <p><strong>Hitungan:</strong> 2 (Tap No.2)</p>
+        <p><strong>Panjang chamfer:</strong> 5 utas</p>
+        <p>Digunakan dalam proses perantara. Biasanya dalam penggunaan ini tidak terlalu memperdulikan akurasi tinggi. Berfungsi sebagai tahap transisi antara tap awal dan tap akhir.</p>
+       </div>
+      </div>
+     </div><!-- Tap 3 -->
+     <div>
+      <button onclick="toggleAccordion('tap3')" class="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition">
+       <div class="flex items-center gap-3">
+        <span class="w-8 h-8 rounded-full bg-rose-100 text-rose-700 font-bold text-sm flex items-center justify-center">3</span>
+        <div class="text-left">
+         <span class="font-semibold text-slate-800 text-sm">Tap Atas (Bottoming Tap)</span> <span class="block text-xs text-slate-500">1.5 utas chamfer</span>
+        </div>
+       </div><i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition" id="icon-tap3"></i> </button>
+      <div class="accordion-body px-4" id="body-tap3">
+       <div class="pb-4 pl-11 space-y-2 text-sm text-slate-600">
+        <svg width="180" height="50" viewbox="0 0 180 50" class="shrink-0 mb-2">
+         <defs>
+          <lineargradient id="g3" x1="0" y1="0" x2="1" y2="0">
+           <stop offset="0%" stop-color="#fda4af" />
+           <stop offset="100%" stop-color="#f43f5e" />
+          </lineargradient>
+         </defs> <rect x="20" y="15" width="160" height="20" rx="3" fill="url(#g3)" stroke="#e11d48" stroke-width="1" /> <text x="15" y="48" font-size="7" fill="#9f1239" font-family="sans-serif">
+          ← 1.5 utas →
+         </text>
+        </svg>
+        <p><strong>Hitungan:</strong> 3 (Tap No.3)</p>
+        <p><strong>Panjang chamfer:</strong> 1.5 utas</p>
+        <p>Digunakan untuk menyelesaikan proses akhir, hingga pemrosesan ke dasar lubang (<em>blind hole</em>). Set 3 jenis tap ini selalu diperlukan untuk lubang buta (<em>blind hole</em>).</p>
+       </div>
+      </div>
+     </div>
+    </div><!-- Cara Menggunakan -->
+    <div class="card-enter bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" style="animation-delay:0.2s">
+     <div class="p-5 border-b border-slate-100">
+      <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i data-lucide="list-ordered" class="w-5 h-5 text-amber-500"></i> Cara Menggunakan Hand Tap</h2>
+     </div>
+     <div class="p-5 space-y-4">
+      <div class="step-card flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+       <span class="w-8 h-8 rounded-lg accent-gradient text-slate-900 font-bold text-sm flex items-center justify-center shrink-0">1</span>
+       <div class="text-sm text-slate-700">
+        <p class="font-semibold text-slate-800 mb-1">Buat Lubang Pilot</p>
+        <p>Buat lubang pilot dengan <strong>mata bor (drill)</strong>. Pastikan ukuran lubang pilot tepat dan dibor secara <strong>vertikal</strong>. Jika ukuran tidak diperhatikan, tap tidak akan bergerak selama proses berlangsung.</p>
+       </div>
+      </div>
+      <div class="step-card flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+       <span class="w-8 h-8 rounded-lg accent-gradient text-slate-900 font-bold text-sm flex items-center justify-center shrink-0">2</span>
+       <div class="text-sm text-slate-700">
+        <p class="font-semibold text-slate-800 mb-1">Pasang Tap pada Handle</p>
+        <p>Kencangkan tap pada <strong>pegangan khusus (tap wrench)</strong>, kemudian semprotkan <strong>minyak pelumas (cutting oil)</strong> dengan kuat ke area kerja.</p>
+       </div>
+      </div>
+      <div class="step-card flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+       <span class="w-8 h-8 rounded-lg accent-gradient text-slate-900 font-bold text-sm flex items-center justify-center shrink-0">3</span>
+       <div class="text-sm text-slate-700">
+        <p class="font-semibold text-slate-800 mb-1">Putar Tap dengan Hati-hati</p>
+        <p>Putar searah jarum jam dengan hati-hati. Pastikan tap masuk secara <strong>lurus (vertikal)</strong>. Jangan gunakan tenaga lebih dari yang diperlukan — tap dapat pecah dan sangat sulit dilepaskan.</p>
+       </div>
+      </div>
+      <div class="step-card flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+       <span class="w-8 h-8 rounded-lg accent-gradient text-slate-900 font-bold text-sm flex items-center justify-center shrink-0">4</span>
+       <div class="text-sm text-slate-700">
+        <p class="font-semibold text-slate-800 mb-1">Teknik Setengah Putaran</p>
+        <p>Kerjakan secara berulang: <strong>½ putaran maju (searah jarum jam)</strong> lalu <strong>½ putaran mundur (berlawanan jarum jam)</strong> untuk membuang serpihan (<em>chip breaking</em>).</p>
+       </div>
+      </div>
+      <div class="step-card flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+       <span class="w-8 h-8 rounded-lg accent-gradient text-slate-900 font-bold text-sm flex items-center justify-center shrink-0">5</span>
+       <div class="text-sm text-slate-700">
+        <p class="font-semibold text-slate-800 mb-1">Gunakan 3 Tap Berurutan</p>
+        <p>Ulangi proses dengan <strong>Tap No.1 → No.2 → No.3</strong> secara berurutan hingga ulir selesai sempurna.</p>
+       </div>
+      </div>
+      <div class="bg-rose-50 border border-rose-200 rounded-xl p-4">
+       <p class="text-rose-800 text-xs font-medium flex items-start gap-2"><i data-lucide="alert-circle" class="w-4 h-4 mt-0.5 shrink-0"></i> <span><strong>Peringatan:</strong> Selalu mulai pemotongan secara vertikal. Jangan memaksakan putaran. Gunakan pelumas secukupnya untuk mengurangi gesekan dan panas.</span></p>
+      </div>
+     </div>
+    </div>
+   </section><!-- SIMULASI SECTION -->
+   <section id="sec-simulasi" class="max-w-5xl mx-auto px-4 py-6 hidden">
+    <div class="card-enter bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+     <div class="p-5 border-b border-slate-100">
+      <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i data-lucide="play-circle" class="w-5 h-5 text-amber-500"></i> Simulasi Proses Tapping</h2>
+      <p class="text-xs text-slate-500 mt-1">Ikuti langkah-langkah proses hand tapping secara interaktif</p>
+     </div>
+     <div class="p-5">
+      <!-- Progress -->
+      <div class="mb-5">
+       <div class="flex justify-between text-xs text-slate-500 mb-1">
+        <span>Progres</span> <span id="simProgressText">Langkah 0/5</span>
+       </div>
+       <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div id="simProgressBar" class="h-full accent-gradient rounded-full progress-fill" style="width:0%"></div>
+       </div>
+      </div><!-- Simulation Canvas -->
+      <div class="relative bg-slate-900 rounded-2xl overflow-hidden mb-5" style="height:320px" id="simCanvas">
+       <!-- Workpiece -->
+       <div class="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-slate-600 to-slate-500 flex items-center justify-center">
+        <div id="workpiece" class="relative">
+         <div class="w-20 h-28 bg-gradient-to-b from-slate-400 to-slate-500 rounded-t-md border-2 border-slate-600 flex items-center justify-center">
+          <div id="pilotHole" class="w-3 bg-slate-800 rounded-b-sm transition-all duration-500" style="height:0px"></div>
+         </div><!-- Thread lines -->
+         <div id="threadLines" class="absolute inset-0 flex items-center justify-center overflow-hidden opacity-0 transition-opacity duration-500">
+          <div class="w-4 space-y-0.5">
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+           <div class="h-px bg-amber-400"></div>
+          </div>
+         </div>
+        </div>
+       </div><!-- Tap tool -->
+       <div id="tapTool" class="absolute left-1/2 -translate-x-1/2 transition-all duration-700 ease-in-out" style="top:-80px">
+        <!-- Handle -->
+        <div class="w-32 h-5 bg-gradient-to-b from-yellow-600 to-yellow-700 rounded-full mx-auto border border-yellow-800"></div><!-- Shaft -->
+        <div class="w-4 mx-auto bg-gradient-to-b from-slate-300 to-slate-400 border border-slate-500 transition-all duration-500" id="tapShaft" style="height:60px">
+         <div class="w-full h-full flex flex-col justify-end">
+          <div id="tapFlutes" class="space-y-1 p-0.5 opacity-0 transition-opacity">
+           <div class="h-px bg-slate-600"></div>
+           <div class="h-px bg-slate-600"></div>
+           <div class="h-px bg-slate-600"></div>
+          </div>
+         </div>
+        </div><!-- Tip -->
+        <div id="tapTip" class="w-0 h-0 mx-auto border-l-[8px] border-r-[8px] border-t-[12px] border-l-transparent border-r-transparent border-t-slate-400 transition-all"></div>
+       </div><!-- Drill -->
+       <div id="drillTool" class="absolute left-1/2 -translate-x-1/2 transition-all duration-700" style="top:-60px; opacity:0">
+        <div class="w-3 h-16 bg-gradient-to-b from-slate
